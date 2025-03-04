@@ -68,14 +68,36 @@ contract RebaseToken is ERC20 {
         return (super.balanceOf(_user) * _calculateAccumulatedInterestSinceLastUpdate(_user) / PRECISION_FACTOR);
     }
 
-    function _calculateAccumulatedInterestSinceLastUpdate(address _user) internal returns (uint256 linearInterest) {
+    function _calculateAccumulatedInterestSinceLastUpdate(address _user) internal view returns (uint256 linearInterest) {
         //will be linear growth
         // Principle amount + (1 + principle amount * user interest rate * time elapsed)
         uint256 timeElapsed = block.timestamp - s_userLastUpdatedTimestamp[_user];
         linearInterest = (PRECISION_FACTOR + (s_userInterestRate[_user] * timeElapsed));
     }
 
+    /**
+     * @notice Mint the accrued interest to user since the last time they interacted with the protocol
+     * @param _user The user to mint the interest to 
+     */
     function _mintAccruedInterest(address _user) internal {
+        uint256 previousPrincipleBalance = super.balanceOf(_user);
+        uint256 currentBalance = balanceOf(_user);
+        uint256 balanceIncreaseMargin = currentBalance - previousPrincipleBalance;
+
         s_userLastUpdatedTimestamp[_user] = block.timestamp;
+        _mint(_user, balanceIncreaseMargin);
+    }
+
+    /**
+     * @notice Burns the user tokens when they withdraw from the vault
+     * @param _from The user to burn the tokens from 
+     * @param _amount Amount of tokens to burn
+     */
+    function burn(address _from, uint256 _amount) external {
+        if (_amount == type(uint256).max ) {
+            _amount = balanceOf(_from);
+        }
+        _mintAccruedInterest(_from);
+        _burn(_from, _amount);
     }
 }
