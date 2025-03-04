@@ -124,6 +124,22 @@ contract RebaseToken is ERC20 {
         }
         return super.transferFrom(_sender, _recipient, _amount);
     }
+
+    /**
+     * @notice Get the token balance of the user. This is the number of tokens that have currently been minted to the 
+     * user. excluding interest afer the last time they interacted with protocol
+     * @param _user User that we will be returning balance of 
+     */
+    function principleBalanceOf(address _user) external view returns(uint256) {
+        return balanceOf(_user);
+    }
+
+    /**
+     * @notice Get the interest rate of for the contract currently for future depositors
+     */
+    function getInterestRate () public view returns(uint256){
+        return s_interestRate;
+    }
  
     /**
      * @notice Burns the user tokens when they withdraw from the vault
