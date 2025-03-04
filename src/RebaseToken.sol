@@ -88,6 +88,18 @@ contract RebaseToken is ERC20 {
         _mint(_user, balanceIncreaseMargin);
     }
 
+    function transfer (address _recipient, uint256 _amount) public override returns(bool){
+        _mintAccruedInterest(msg.sender);
+        _mintAccruedInterest(_recipient);
+        if (_amount == type(uint256).max) {
+            _amount = balanceOf(msg.sender);
+        }
+        if (balanceOf(_recipient) == 0){
+            s_userInterestRate[_recipient] = s_userInterestRate[msg.sender];
+        }
+        return super.transfer(_recipient, _amount);
+    }
+
     /**
      * @notice Burns the user tokens when they withdraw from the vault
      * @param _from The user to burn the tokens from 
