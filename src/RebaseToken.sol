@@ -29,7 +29,7 @@ contract RebaseToken is ERC20, Ownable, AccessControl {
 
     constructor() ERC20("Rebase token", "RBT") Ownable(msg.sender) {}
 
-    function grantMintAndBurnRole (address _account) external onlyOwner {
+    function grantMintAndBurnRole(address _account) external onlyOwner {
         _grantRole(MINT_AND_BURN_ROLE, _account);
     }
 
@@ -52,7 +52,7 @@ contract RebaseToken is ERC20, Ownable, AccessControl {
      * @param _amount amount of token to mint to the user
      */
 
-    function mint(address _to, uint256 _amount) external onlyRole(MINT_AND_BURN_ROLE){
+    function mint(address _to, uint256 _amount) external onlyRole(MINT_AND_BURN_ROLE) {
         _mintAccruedInterest(_to);
         s_userInterestRate[_to] = s_interestRate;
         _mint(_to, _amount);
@@ -72,8 +72,7 @@ contract RebaseToken is ERC20, Ownable, AccessControl {
      * @param _user The user we are getting the balance of. Interest included
      */
     function balanceOf(address _user) public view override returns (uint256) {
-        return 
-        ((super.balanceOf(_user) * _calculateAccumulatedInterestSinceLastUpdate(_user)) / PRECISION_FACTOR);
+        return ((super.balanceOf(_user) * _calculateAccumulatedInterestSinceLastUpdate(_user)) / PRECISION_FACTOR);
     }
 
     function _calculateAccumulatedInterestSinceLastUpdate(address _user)
@@ -158,7 +157,7 @@ contract RebaseToken is ERC20, Ownable, AccessControl {
      * @param _from The user to burn the tokens from
      * @param _amount Amount of tokens to burn
      */
-    function burn(address _from, uint256 _amount) external onlyRole(MINT_AND_BURN_ROLE){
+    function burn(address _from, uint256 _amount) external onlyRole(MINT_AND_BURN_ROLE) {
         if (_amount == type(uint256).max) {
             _amount = balanceOf(_from);
         }
