@@ -22,9 +22,28 @@ contract RebaseTokenTest is Test {
         vm.stopPrank();
     }
 
-    function testDepositLinear() public {
+    function testDepositLinear(uint amount) public {
+        amount = bound(amount, 1e5, type(uint96).max);
+        // deposit
         vm.startPrank(user);
-        vm.deal(user, 1 ether);
+        vm.deal(user, amount);
+        vault.deposit{value: amount}();
+        // check our rebase token balance
+        uint256 startBalance = rebaseToken.balanceOf(user);
+        console.log("starting balance: ", startBalance);
+        assertEq(startBalance, amount);
+
+        //warp time and check balances again
+        vm.warp(block.timestamp + 1 hours);
+        uint256 middleBalance = rebaseToken.balanceOf(user);
+        assert(middleBalance > startBalance);
+
+        //warp time and check balances again
+        vm.warp(block.timestamp + 1 hours);
+        uint256 endBalance = rebaseToken.balanceOf(user);
+        assertGt(endBalance, middleBalance);
+
+        assertEq((endBalance - middleBalance),( middleBalance - startBalance));
         vm.stopPrank();
     }
 }
