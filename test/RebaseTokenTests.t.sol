@@ -21,4 +21,10 @@ contract RebaseTokenTest is Test {
         (bool success,) = payable(address(vault)).call{value: 1e18}("");
         vm.stopPrank();
     }
+
+    function testDepositLinear() public {
+        vm.startPrank(user);
+        vm.deal(user, 1 ether);
+        vm.stopPrank();
+    }
 }
