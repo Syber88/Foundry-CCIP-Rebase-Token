@@ -72,7 +72,6 @@ contract RebaseTokenTest is Test {
         vm.deal(user, depositAmount);
         vm.prank(user);
         vault.deposit{value: depositAmount}();
-
         //warp time
         vm.warp(block.timestamp + time);
         uint256 balanceAfterSomeTime = rebaseToken.balanceOf(user);
@@ -86,6 +85,40 @@ contract RebaseTokenTest is Test {
         uint256 ethBalance = address(user).balance;
 
         assertEq(balanceAfterSomeTime, ethBalance);
+    }
 
+    function testTransfer(uint256 amount, uint256 amountToSend) public {
+        amount = bound(amount, 1e5 + 1e5, type(uint96).max);
+        amountToSend = bound(amountToSend, 1e5, amount - 1e5);
+
+        vm.deal(user, amount);
+        vm.prank(user);
+        vault.deposit{value: amount}();
+
+        address user2 = makeAddr("user2");
+        uint256 userBalance = rebaseToken.balanceOf(user);
+        uint256 user2Balance = rebaseToken.balanceOf(user2);
+
+        assertEq(userBalance, amount);
+        assertEq(user2Balance, 0);
+
+        //only the owner can reduce the interest rate 
+        vm.prank(owner);
+        rebaseToken.setInterestRate(4e10);
+
+        vm.prank(user);
+        rebaseToken.transfer(user2, amountToSend);
+        uint256 userBalanceAfterTransfer = rebaseToken.balanceOf(user);
+        uint256 user2BalanceAfterTransfer = rebaseToken.balanceOf(user2);
+
+        assertEq(userBalanceAfterTransfer, (userBalance - amountToSend));
+        assertEq(user2BalanceAfterTransfer, amountToSend);
+
+        //check that the user interest rate was inherited from the sender
+
+        assertEq(rebaseToken.getUserInterestRate(user), 5e10);
+        assertEq(rebaseToken.getUserInterestRate(user2), 5e10);
+
+        
     }
 }
