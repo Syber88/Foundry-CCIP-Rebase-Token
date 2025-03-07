@@ -125,15 +125,17 @@ contract RebaseTokenTest is Test {
 
     function testCantSetInterestRate(uint256 newInterestRate) public {
         vm.prank(user);
-        vm.expectRevert(Ownable.OwnableUnauthorizedAccount.selector);
+        vm.expectPartialRevert(Ownable.OwnableUnauthorizedAccount.selector);
         rebaseToken.setInterestRate(newInterestRate);
     }
 
     function testCannotCallMintAndBurn() public {
         vm.prank(user);
-        vm.expectRevert(AccessControl.AccessControlUnauthorizedAccount.selector);
+        vm.expectPartialRevert(bytes4(keccak256("AccessControlUnauthorizedAccount(address,bytes32)"))
+);
         rebaseToken.mint(user, 100);
-        vm.expectRevert(AccessControl.AccessControlUnauthorizedAccount.selector);
+        vm.expectPartialRevert(bytes4(keccak256("AccessControlUnauthorizedAccount(address,bytes32)"))
+);
         rebaseToken.burn(user, 100);
     }
 }
