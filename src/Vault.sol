@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT 
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
 import {IRebaseToken} from "./interfaces/IRebaseToken.sol";
@@ -18,18 +18,16 @@ contract Vault {
     /**
      * @notice Gets the address of the rebase token
      */
-    function getRebaseTokenAddress() external view returns(address) {
+    function getRebaseTokenAddress() external view returns (address) {
         return address(i_rebaseToken);
     }
 
-    receive() external payable {
-
-    }
+    receive() external payable {}
 
     /**
      * @notice allows users to deposit ETH into the vault and mint rebase tokens in return
      */
-    function deposit () external payable {
+    function deposit() external payable {
         i_rebaseToken.mint(msg.sender, msg.value);
         emit Deposit(msg.sender, msg.value);
     }
