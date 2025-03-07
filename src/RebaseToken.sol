@@ -142,7 +142,7 @@ contract RebaseToken is ERC20, Ownable, AccessControl {
      * @param _user User that we will be returning balance of
      */
     function principleBalanceOf(address _user) external view returns (uint256) {
-        return balanceOf(_user);
+        return super.balanceOf(_user);
     }
 
     /**
