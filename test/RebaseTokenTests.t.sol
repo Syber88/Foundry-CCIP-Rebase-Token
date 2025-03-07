@@ -6,7 +6,6 @@ import {RebaseToken} from "../src/RebaseToken.sol";
 import {IRebaseToken} from "../src/interfaces/IRebaseToken.sol";
 import {Vault} from "../src/Vault.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract RebaseTokenTest is Test {
@@ -146,5 +145,19 @@ contract RebaseTokenTest is Test {
 
         vm.warp(block.timestamp + 1 hours);
         assertEq(rebaseToken.principleBalanceOf(user), amount);
+    }
+
+    function testGetRebaseTokenAddress() public view{
+        assertEq(vault.getRebaseTokenAddress(), address(rebaseToken));
+    }
+
+    function testInterestrateCanOnlyDecrease(uint256 newInterestRate) public {
+        uint256 initialInterestRate = rebaseToken.getInterestRate();
+        newInterestRate = bound(newInterestRate, rebaseToken.getInterestRate(), type(uint256).max);
+        vm.prank(owner);
+        vm.expectPartialRevert(RebaseToken.RebaseToken__InterestRateCanOnlyDecrease.selector);
+        rebaseToken.setInterestRate(newInterestRate);
+        assertEq(rebaseToken.getInterestRate(), initialInterestRate);
+
     }
 }
