@@ -102,7 +102,7 @@ contract RebaseTokenTest is Test {
         assertEq(userBalance, amount);
         assertEq(user2Balance, 0);
 
-        //only the owner can reduce the interest rate 
+        //only the owner can reduce the interest rate
         vm.prank(owner);
         rebaseToken.setInterestRate(4e10);
 
@@ -118,7 +118,11 @@ contract RebaseTokenTest is Test {
 
         assertEq(rebaseToken.getUserInterestRate(user), 5e10);
         assertEq(rebaseToken.getUserInterestRate(user2), 5e10);
+    }
 
-        
+    function testCantSetInterestRate(uint256 newInterestRate) public {
+        vm.prank(user);
+        vm.expectRevert();
+        rebaseToken.setInterestRate(newInterestRate);
     }
 }
