@@ -147,7 +147,7 @@ contract RebaseTokenTest is Test {
         assertEq(rebaseToken.principleBalanceOf(user), amount);
     }
 
-    function testGetRebaseTokenAddress() public view{
+    function testGetRebaseTokenAddress() public view {
         assertEq(vault.getRebaseTokenAddress(), address(rebaseToken));
     }
 
@@ -158,6 +158,5 @@ contract RebaseTokenTest is Test {
         vm.expectPartialRevert(RebaseToken.RebaseToken__InterestRateCanOnlyDecrease.selector);
         rebaseToken.setInterestRate(newInterestRate);
         assertEq(rebaseToken.getInterestRate(), initialInterestRate);
-
     }
 }
