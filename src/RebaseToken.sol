@@ -20,9 +20,9 @@ contract RebaseToken is ERC20, Ownable, AccessControl {
     mapping(address user => uint256 amount) private s_userInterestRate;
     mapping(address user => uint256 amount) private s_userLastUpdatedTimestamp;
 
-    uint256 private s_interestRate = 5e10;
+    uint256 private s_interestRate = (5 * PRECISION_FACTOR ) / 1e8;
 
-    uint256 private constant PRECISION_FACTOR = 1e18;
+    uint256 private constant PRECISION_FACTOR = 1e27;
     bytes32 private constant MINT_AND_BURN_ROLE = keccak256("MINT_AND_BURN_ROLE");
 
     event InterestRateSet(uint256 indexed newInterestRate);
@@ -158,9 +158,6 @@ contract RebaseToken is ERC20, Ownable, AccessControl {
      * @param _amount Amount of tokens to burn
      */
     function burn(address _from, uint256 _amount) external onlyRole(MINT_AND_BURN_ROLE) {
-        if (_amount == type(uint256).max) {
-            _amount = balanceOf(_from);
-        }
         _mintAccruedInterest(_from);
         _burn(_from, _amount);
     }
