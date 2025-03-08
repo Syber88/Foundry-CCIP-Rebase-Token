@@ -131,8 +131,10 @@ contract RebaseTokenTest is Test {
     function testCannotCallMintAndBurn() public {
         vm.prank(user);
         vm.expectPartialRevert(bytes4(keccak256("AccessControlUnauthorizedAccount(address,bytes32)")));
+        // vm.expectPartialRevert(AccessControl.AccessControlUnauthorizedAccount.selector);
         rebaseToken.mint(user, 100);
         vm.expectPartialRevert(bytes4(keccak256("AccessControlUnauthorizedAccount(address,bytes32)")));
+        // vm.expectPartialRevert(AccessControl.AccessControlUnauthorizedAccount.selector);
         rebaseToken.burn(user, 100);
     }
 
