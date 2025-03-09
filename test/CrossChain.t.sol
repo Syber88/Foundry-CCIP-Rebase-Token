@@ -8,12 +8,11 @@ import {IRebaseToken} from "../src/interfaces/IRebaseToken.sol";
 import {Vault} from "../src/Vault.sol";
 import {CCIPLocalSimulatorFork} from "@chainlink-local/src/ccip/CCIPLocalSimulatorFork.sol";
 
-contract CrossChainTest is Test{
+contract CrossChainTest is Test {
     uint256 sepoliaFork;
     uint256 arbSepoliaFork;
 
     CCIPLocalSimulatorFork ccipLocalSimFork;
-
 
     function setUp() public {
         sepoliaFork = vm.createSelectFork("sepolia");
@@ -21,8 +20,5 @@ contract CrossChainTest is Test{
 
         ccipLocalSimFork = new CCIPLocalSimulatorFork();
         vm.makePersistent(address(ccipLocalSimFork));
-
-        
     }
-
 }
