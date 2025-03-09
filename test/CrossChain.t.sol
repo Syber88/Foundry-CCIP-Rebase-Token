@@ -22,7 +22,7 @@ contract CrossChainTest is Test {
 
     Vault vault;
     RebaseTokenPool sepoliaPool;
-    RebaseTokenPool ArbSepoliaPool;
+    RebaseTokenPool arbSepoliaPool;
 
     Register.NetworkDetails sepoliaNetworkDetails;
     Register.NetworkDetails arbSepoliaNetworkDetails;
@@ -45,6 +45,7 @@ contract CrossChainTest is Test {
         vm.selectFork(arbSepoliaFork);
         sepoliaNetworkDetails = ccipLocalSimFork.getNetworkDetails(block.chainid);
         arbSepoliaToken = new RebaseToken();
+        arbSepoliaPool = new RebaseTokenPool(IERC20(address(arbSepoliaToken)),new address[](0), arbSepoliaNetworkDetails.rmnProxyAddress, arbSepoliaNetworkDetails.routerAddress);
 
         vm.startPrank(owner);
         vm.stopPrank();
