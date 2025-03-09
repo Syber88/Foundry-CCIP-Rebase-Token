@@ -8,6 +8,7 @@ import {IRebaseToken} from "../src/interfaces/IRebaseToken.sol";
 import {Vault} from "../src/Vault.sol";
 import {CCIPLocalSimulatorFork, Register} from "@chainlink-local/src/ccip/CCIPLocalSimulatorFork.sol";
 import {IERC20} from "@ccip/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/IERC20.sol";
+import {RegistryModuleOwnerCustom} from "@ccip/contracts/src/v0.8/ccip/tokenAdminRegistry/RegistryModuleOwnerCustom.sol";
 
 contract CrossChainTest is Test {
     address owner = makeAddr("owner");
@@ -43,11 +44,14 @@ contract CrossChainTest is Test {
             sepoliaNetworkDetails.rmnProxyAddress,
             sepoliaNetworkDetails.routerAddress
         );
+        sepoliaToken.grantMintAndBurnRole(address(vault));
+        sepoliaToken.grantMintAndBurnRole(address(sepoliaPool));
+        RegistryModuleOwnerCustom(sepoliaNetworkDetails.registryModuleOwnerCustomAddress).registerAdminViaOwner(address(sepoliaToken));
         vm.stopPrank();
 
         //deploy and configure on arb sepolia
         vm.selectFork(arbSepoliaFork);
-        sepoliaNetworkDetails = ccipLocalSimFork.getNetworkDetails(block.chainid);
+        arbSepoliaNetworkDetails = ccipLocalSimFork.getNetworkDetails(block.chainid);
         arbSepoliaToken = new RebaseToken();
         arbSepoliaPool = new RebaseTokenPool(
             IERC20(address(arbSepoliaToken)),
@@ -55,6 +59,10 @@ contract CrossChainTest is Test {
             arbSepoliaNetworkDetails.rmnProxyAddress,
             arbSepoliaNetworkDetails.routerAddress
         );
+        // arbSepoliaToken.grantMintAndBurnRole(address(vault));
+        arbSepoliaToken.grantMintAndBurnRole(address(arbSepoliaPool));
+        RegistryModuleOwnerCustom(arbSepoliaNetworkDetails.registryModuleOwnerCustomAddress).registerAdminViaOwner(address(arbSepoliaToken));
+
 
         vm.startPrank(owner);
         vm.stopPrank();
