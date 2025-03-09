@@ -56,6 +56,9 @@ contract CrossChainTest is Test {
         TokenAdminRegistry(sepoliaNetworkDetails.tokenAdminRegistryAddress).setPool(
             address(sepoliaToken), address(sepoliaPool)
         );
+        TokenAdminRegistry(sepoliaNetworkDetails.tokenAdminRegistryAddress).setPool(
+            address(sepoliaToken), address(sepoliaPool)
+        );
         vm.stopPrank();
 
         //deploy and configure on arb sepolia
@@ -78,20 +81,7 @@ contract CrossChainTest is Test {
         TokenAdminRegistry(arbSepoliaNetworkDetails.tokenAdminRegistryAddress).setPool(
             address(arbSepoliaToken), address(arbSepoliaPool)
         );
-        configureTokenPool(
-            sepoliaFork,
-            address(sepoliaPool),
-            arbSepoliaNetworkDetails.remoteChainSelector,
-            address(arbSepoliaPool),
-            address(arbSepoliaToken)
-        );
-        configureTokenPool(
-            arbSepoliaFork,
-            address(arbSepoliaPool),
-            sepoliaNetworkDetails.remoteChainSelector,
-            address(sepoliaPool),
-            address(sepoliaToken)
-        );
+
         vm.stopPrank();
     }
 
