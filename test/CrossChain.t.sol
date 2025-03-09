@@ -9,7 +9,6 @@ import {Vault} from "../src/Vault.sol";
 import {CCIPLocalSimulatorFork, Register} from "@chainlink-local/src/ccip/CCIPLocalSimulatorFork.sol";
 import {IERC20} from "@ccip/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/IERC20.sol";
 
-
 contract CrossChainTest is Test {
     address owner = makeAddr("owner");
     uint256 sepoliaFork;
@@ -38,17 +37,26 @@ contract CrossChainTest is Test {
         vm.startPrank(owner);
         sepoliaToken = new RebaseToken();
         vault = new Vault(IRebaseToken(address(sepoliaToken)));
-        sepoliaPool = new RebaseTokenPool(IERC20(address(sepoliaToken)),new address[](0), sepoliaNetworkDetails.rmnProxyAddress, sepoliaNetworkDetails.routerAddress);
+        sepoliaPool = new RebaseTokenPool(
+            IERC20(address(sepoliaToken)),
+            new address[](0),
+            sepoliaNetworkDetails.rmnProxyAddress,
+            sepoliaNetworkDetails.routerAddress
+        );
         vm.stopPrank();
 
         //deploy and configure on arb sepolia
         vm.selectFork(arbSepoliaFork);
         sepoliaNetworkDetails = ccipLocalSimFork.getNetworkDetails(block.chainid);
         arbSepoliaToken = new RebaseToken();
-        arbSepoliaPool = new RebaseTokenPool(IERC20(address(arbSepoliaToken)),new address[](0), arbSepoliaNetworkDetails.rmnProxyAddress, arbSepoliaNetworkDetails.routerAddress);
+        arbSepoliaPool = new RebaseTokenPool(
+            IERC20(address(arbSepoliaToken)),
+            new address[](0),
+            arbSepoliaNetworkDetails.rmnProxyAddress,
+            arbSepoliaNetworkDetails.routerAddress
+        );
 
         vm.startPrank(owner);
         vm.stopPrank();
-
     }
 }
