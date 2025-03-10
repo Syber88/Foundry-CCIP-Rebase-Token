@@ -11,6 +11,7 @@ import {IERC20} from "@ccip/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8
 import {RegistryModuleOwnerCustom} from "@ccip/contracts/src/v0.8/ccip/tokenAdminRegistry/RegistryModuleOwnerCustom.sol";
 import {TokenAdminRegistry} from "@ccip/contracts/src/v0.8/ccip/tokenAdminRegistry/TokenAdminRegistry.sol";
 import {TokenPool} from "@ccip/contracts/src/v0.8/ccip/pools/TokenPool.sol";
+import {RateLimiter} from "@ccip/contractgs/src/v0.8/ccip/libraries/RateLimiter.sol";
 
 contract CrossChainTest is Test {
     address owner = makeAddr("owner");
@@ -81,12 +82,35 @@ contract CrossChainTest is Test {
         vm.stopPrank();
     }
 
-    function configureTokenPool(uint256 fork, address localPool) public {
+    function configureTokenPool(
+        uint256 fork,
+        address localPool,
+        uint256 remoteChainSelector,
+        address remotePool,
+        address remoteTokenAddress
+    ) public {
         vm.selectFork(fork);
         vm.prank(owner);
         TokenPool.ChainUpdate[] memory chainsToAdd = new TokenPool.ChainUpdate[](1);
-        chainsToAdd[0]
-        TokenPool(localPool).applyChainUpdates(new uint64[](0). chainsToAdd);
 
+        remotePoolAddresses[0] = abi.encode(remotePool);
+        chainsToAdd[0] = TokenPool.ChainUpdate({
+            remoteChainSelector: remoteChainSelector,
+            remotePool: remotePool,
+            remoteTokenAddress: abi.encode(remoteTokenAddress),
+            outboundRateLimiter: RateLimiter.Config({isEnabled: false, capacity: 0, rate: 0}),
+            inboundRateLimiter: RateLimiter.Config({isEnabled: false, capacity: 0, rate: 0})
+        });
+
+        //               struct ChainUpdate {
+        //     uint64 remoteChainSelector; // ──╮ Remote chain selector
+        //     bool allowed; // ────────────────╯ Whether the chain should be enabled
+        //     bytes remotePoolAddress; //        Address of the remote pool, ABI encoded in the case of a remote EVM chain.
+        //     bytes remoteTokenAddress; //       Address of the remote token, ABI encoded in the case of a remote EVM chain.
+        //     RateLimiter.Config outboundRateLimiterConfig; // Outbound rate limited config, meaning the rate limits for all of the onRamps for the given chain
+        //     RateLimiter.Config inboundRateLimiterConfig; // Inbound rate limited config, meaning the rate limits for all of the offRamps for the given chain
+        //   }
+
+        TokenPool(localPool).applyChainUpdates(new uint64[](0).chainsToAdd);
     }
 }
