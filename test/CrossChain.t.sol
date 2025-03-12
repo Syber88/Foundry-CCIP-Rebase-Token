@@ -13,6 +13,7 @@ import {TokenAdminRegistry} from "@ccip/contracts/src/v0.8/ccip/tokenAdminRegist
 import {TokenPool} from "@ccip/contracts/src/v0.8/ccip/pools/TokenPool.sol";
 import {RateLimiter} from "@ccip/contracts/src/v0.8/ccip/libraries/RateLimiter.sol";
 import {Client} from "@ccip/contracts/src/v0.8/ccip/libraries/Client.sol";
+import {IRouterClient} from "@ccip/contracts/src/v0.8/ccip/interfaces/IRouterClient.sol";
 
 contract CrossChainTest is Test {
     address owner = makeAddr("owner");
@@ -131,6 +132,7 @@ contract CrossChainTest is Test {
         RebaseToken remoteToken
     ) public {
         vm.selectFork(localFork);
+        vm.startPrank(user);
         Client.EVMTokenAmount[] memory tokenAmounts = new Client.EVMTokenAmount[](1);
         tokenAmounts[0] = Client.EVMTokenAmount({
             token: address(localToken),
@@ -144,7 +146,19 @@ contract CrossChainTest is Test {
             feeToken: localNetworkDetails.linkAddress,
             extraArgs: Client._argsToBytes(Client.EVMExtraArgsV2({gasLimit: 0}))
         });
-        vm.startPrank(user);
 
+        uint256 fee = IRouterClient(localNetworkDetails.routerAddress).getFee(remoteNetworkDetails.chainSelector, message);
+        ccipLocalSimFork.requestLinkFromFaucet(user, fee);
+        vm.prank(user);
+        IERC20(localNetworkDetails.linkAddress).approve(localNetworkDetails.routerAddress, fee);
+        vm.prank(user);
+        IERC20(localToken).approve(localNetworkDetails.routerAddress, amountToBridge);
+        uint256 localBalanceBefore = localToken.balanceOf(user);
+        vm.prank(user);
+        IRouterClient(localNetworkDetails.routerAddress).ccipSend(remoteNetworkDetails.chainSelector, message);
+        uint256 localBalanceAfter = localToken.balanceOf(user);
+        assertEq(localBalanceAfter, localBalanceBefore - amountToBridge);
+
+        
     }
 }
