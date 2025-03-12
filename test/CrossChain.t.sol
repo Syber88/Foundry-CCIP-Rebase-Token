@@ -103,7 +103,7 @@ contract CrossChainTest is Test {
     function configureTokenPool(
         uint256 fork,
         address localPool,
-        uint256 remoteChainSelector,
+        uint64 remoteChainSelector,
         address remotePool,
         address remoteTokenAddress
     ) public {
@@ -117,14 +117,14 @@ contract CrossChainTest is Test {
         chainsToAdd[0] = TokenPool.ChainUpdate({
             remoteChainSelector: remoteChainSelector,
             allowed: true,
-            remotePoolAddresses: remotePoolAddresses,
+            remotePoolAddress: remotePoolAddresses[0],
             remoteTokenAddress: abi.encode(remoteTokenAddress),
-            outboundRateLimiter: RateLimiter.Config({isEnabled: false, capacity: 0, rate: 0}),
-            inboundRateLimiter: RateLimiter.Config({isEnabled: false, capacity: 0, rate: 0})
+            outboundRateLimiterConfig: RateLimiter.Config({isEnabled: false, capacity: 0, rate: 0}),
+            inboundRateLimiterConfig: RateLimiter.Config({isEnabled: false, capacity: 0, rate: 0})
         });
-        uint64[] memory remoteChainSelectorsToRemove = new uint64[](0);
+        // uint64[] memory remoteChainSelectorsToRemove = new uint64[](0);
 
-        TokenPool(localPool).applyChainUpdates(remoteChainSelectorsToRemove, chainsToAdd);
+        TokenPool(localPool).applyChainUpdates( chainsToAdd);
     }
 
     function bridgeTokens(
@@ -139,20 +139,18 @@ contract CrossChainTest is Test {
         vm.selectFork(localFork);
         vm.startPrank(user);
         Client.EVMTokenAmount[] memory tokenAmounts = new Client.EVMTokenAmount[](1);
-        tokenAmounts[0] = Client.EVMTokenAmount({
-            token: address(localToken),
-            amount: amountToBridge
-        });
+        tokenAmounts[0] = Client.EVMTokenAmount({token: address(localToken), amount: amountToBridge});
 
         Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
             receiver: abi.encode(user),
             data: "",
-            tokenAmounts: tokenAmounts, 
+            tokenAmounts: tokenAmounts,
             feeToken: localNetworkDetails.linkAddress,
             extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({gasLimit: 0}))
         });
 
-        uint256 fee = IRouterClient(localNetworkDetails.routerAddress).getFee(remoteNetworkDetails.chainSelector, message);
+        uint256 fee =
+            IRouterClient(localNetworkDetails.routerAddress).getFee(remoteNetworkDetails.chainSelector, message);
         ccipLocalSimFork.requestLinkFromFaucet(user, fee);
         vm.prank(user);
         IERC20(localNetworkDetails.linkAddress).approve(localNetworkDetails.routerAddress, fee);
@@ -174,6 +172,5 @@ contract CrossChainTest is Test {
         uint256 remoteUserInterestRate = localToken.getUserInterestRate(user);
 
         assertEq(remoteUserInterestRate, localUserInterestRate);
-
     }
 }
