@@ -20,6 +20,7 @@ contract CrossChainTest is Test {
     address user = makeAddr("user");
     uint256 sepoliaFork;
     uint256 arbSepoliaFork;
+    uint256 SEND_VALUE = 1e5;
 
     CCIPLocalSimulatorFork ccipLocalSimFork;
 
@@ -172,5 +173,14 @@ contract CrossChainTest is Test {
         uint256 remoteUserInterestRate = localToken.getUserInterestRate(user);
 
         assertEq(remoteUserInterestRate, localUserInterestRate);
+    }
+
+    function testBridgeAllTOken() public {
+        vm.selectFork(sepoliaFork);
+        vm.deal(user, SEND_VALUE);
+        vm.prank(user);
+        vault.deposit{value: SEND_VALUE}();
+        Vault(payable(address(vault))).deposit{value: SEND_VALUE}();
+        assertEq(sepoliaToken.balanceOf(user), SEND_VALUE);
     }
 }
