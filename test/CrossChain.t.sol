@@ -17,6 +17,7 @@ import {IRouterClient} from "@ccip/contracts/src/v0.8/ccip/interfaces/IRouterCli
 
 contract CrossChainTest is Test {
     address owner = makeAddr("owner");
+    address user = makeAddr("user");
     uint256 sepoliaFork;
     uint256 arbSepoliaFork;
 
@@ -77,6 +78,7 @@ contract CrossChainTest is Test {
         RegistryModuleOwnerCustom(arbSepoliaNetworkDetails.registryModuleOwnerCustomAddress).registerAdminViaOwner(
             address(arbSepoliaToken)
         );
+
         TokenAdminRegistry(arbSepoliaNetworkDetails.tokenAdminRegistryAddress).acceptAdminRole(address(arbSepoliaToken));
         TokenAdminRegistry(arbSepoliaNetworkDetails.tokenAdminRegistryAddress).setPool(
             address(arbSepoliaToken), address(arbSepoliaPool)
@@ -84,14 +86,14 @@ contract CrossChainTest is Test {
         configureTokenPool(
             sepoliaFork,
             address(sepoliaPool),
-            arbSepoliaNetworkDetails.remoteChainSelector,
+            arbSepoliaNetworkDetails.chainSelector,
             address(arbSepoliaPool),
             address(arbSepoliaToken)
         );
         configureTokenPool(
             arbSepoliaFork,
             address(arbSepoliaPool),
-            sepoliaNetworkDetails.remoteChainSelector,
+            sepoliaNetworkDetails.chainSelector,
             address(sepoliaPool),
             address(sepoliaToken)
         );
@@ -114,20 +116,23 @@ contract CrossChainTest is Test {
         remotePoolAddresses[0] = abi.encode(remotePool);
         chainsToAdd[0] = TokenPool.ChainUpdate({
             remoteChainSelector: remoteChainSelector,
+            allowed: true,
             remotePoolAddresses: remotePoolAddresses,
             remoteTokenAddress: abi.encode(remoteTokenAddress),
             outboundRateLimiter: RateLimiter.Config({isEnabled: false, capacity: 0, rate: 0}),
             inboundRateLimiter: RateLimiter.Config({isEnabled: false, capacity: 0, rate: 0})
         });
-        TokenPool(localPool).applyChainUpdates(new uint64[](0).chainsToAdd);
+        uint64[] memory remoteChainSelectorsToRemove = new uint64[](0);
+
+        TokenPool(localPool).applyChainUpdates(remoteChainSelectorsToRemove, chainsToAdd);
     }
 
     function bridgeTokens(
         uint256 amountToBridge,
-        uin256 localFork,
+        uint256 localFork,
         uint256 remoteFork,
         Register.NetworkDetails memory localNetworkDetails,
-        Register.NetworkDetails remoteNetworkDetails,
+        Register.NetworkDetails memory remoteNetworkDetails,
         RebaseToken localToken,
         RebaseToken remoteToken
     ) public {
@@ -142,9 +147,9 @@ contract CrossChainTest is Test {
         Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
             receiver: abi.encode(user),
             data: "",
-            tokenAmount: tokenAmounts, 
+            tokenAmounts: tokenAmounts, 
             feeToken: localNetworkDetails.linkAddress,
-            extraArgs: Client._argsToBytes(Client.EVMExtraArgsV2({gasLimit: 0}))
+            extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({gasLimit: 0}))
         });
 
         uint256 fee = IRouterClient(localNetworkDetails.routerAddress).getFee(remoteNetworkDetails.chainSelector, message);
@@ -152,19 +157,23 @@ contract CrossChainTest is Test {
         vm.prank(user);
         IERC20(localNetworkDetails.linkAddress).approve(localNetworkDetails.routerAddress, fee);
         vm.prank(user);
-        IERC20(localToken).approve(localNetworkDetails.routerAddress, amountToBridge);
+        IERC20(address(localToken)).approve(localNetworkDetails.routerAddress, amountToBridge);
         uint256 localBalanceBefore = localToken.balanceOf(user);
         vm.prank(user);
         IRouterClient(localNetworkDetails.routerAddress).ccipSend(remoteNetworkDetails.chainSelector, message);
         uint256 localBalanceAfter = localToken.balanceOf(user);
         assertEq(localBalanceAfter, localBalanceBefore - amountToBridge);
+        uint256 localUserInterestRate = localToken.getUserInterestRate(user);
 
         vm.selectFork(remoteFork);
         vm.warp(block.timestamp + 20 minutes);
         uint256 remoteBalanceBefore = remoteToken.balanceOf(user);
-        ccipLocalSimFork.switchChainAndRouteMessage(remotefork);
+        ccipLocalSimFork.switchChainAndRouteMessage(remoteFork);
         uint256 remoteBalanceAfter = remoteToken.balanceOf(user);
         assertEq(remoteBalanceAfter, remoteBalanceBefore + amountToBridge);
+        uint256 remoteUserInterestRate = localToken.getUserInterestRate(user);
+
+        assertEq(remoteUserInterestRate, localUserInterestRate);
 
     }
 }
