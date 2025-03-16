@@ -125,7 +125,7 @@ contract CrossChainTest is Test {
         });
         // uint64[] memory remoteChainSelectorsToRemove = new uint64[](0);
 
-        TokenPool(localPool).applyChainUpdates( chainsToAdd);
+        TokenPool(localPool).applyChainUpdates(chainsToAdd);
     }
 
     function bridgeTokens(
@@ -182,5 +182,14 @@ contract CrossChainTest is Test {
         vault.deposit{value: SEND_VALUE}();
         Vault(payable(address(vault))).deposit{value: SEND_VALUE}();
         assertEq(sepoliaToken.balanceOf(user), SEND_VALUE);
+        bridgeTokens(
+            SEND_VALUE,
+            sepoliaFork,
+            arbSepoliaFork,
+            sepoliaNetworkDetails,
+            arbSepoliaNetworkDetails,
+            sepoliaToken,
+            arbSepoliaToken
+        );
     }
 }
