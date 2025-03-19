@@ -35,8 +35,8 @@ contract CrossChainTest is Test {
     Register.NetworkDetails arbSepoliaNetworkDetails;
 
     function setUp() public {
-        sepoliaFork = vm.createSelectFork("sepolia");
-        arbSepoliaFork = vm.createFork("arb-sepolia");
+        sepoliaFork = vm.createSelectFork(vm.envString("SEPOLIA_RPC_URL"));
+        arbSepoliaFork = vm.createFork(vm.envString("ARB_SEPOLIA_RPC_URL"));
 
         ccipLocalSimFork = new CCIPLocalSimulatorFork();
         vm.makePersistent(address(ccipLocalSimFork));
