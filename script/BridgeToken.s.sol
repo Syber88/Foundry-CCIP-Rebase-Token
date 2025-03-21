@@ -23,7 +23,8 @@ contract BridgeTokenScript is Script {
             data: "",
             tokenAmounts: tokenAmounts,
             feeToken: linkTokenAddress,
-            extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({gasLimit: 0}))
+            extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({gasLimit: 0})) // can leave out the other 
+            // arguments found in V2 since we are deploying to ZKsync and it is optional there
         });
         uint256 ccipFee = IRouterClient(routerAddress).getFee(destinationChainSelector, message);
         IERC20(linkTokenAddress).approve(routerAddress, ccipFee);

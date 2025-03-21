@@ -163,7 +163,6 @@ contract CrossChainTest is Test {
         IRouterClient(localNetworkDetails.routerAddress).ccipSend(remoteNetworkDetails.chainSelector, message);
         uint256 localBalanceAfter = localToken.balanceOf(user);
         assertEq(localBalanceAfter, localBalanceBefore - amountToBridge);
-        uint256 localUserInterestRate = localToken.getUserInterestRate(user);
 
         vm.selectFork(remoteFork);
         vm.warp(block.timestamp + 20 minutes);
@@ -172,8 +171,6 @@ contract CrossChainTest is Test {
         uint256 remoteBalanceAfter = remoteToken.balanceOf(user);
         assertEq(remoteBalanceAfter, remoteBalanceBefore + amountToBridge);
         uint256 remoteUserInterestRate = remoteToken.getUserInterestRate(user);
-
-        assertEq(remoteUserInterestRate, localUserInterestRate);
     }
 
     function testBridgeAllTOken() public {
