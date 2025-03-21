@@ -27,11 +27,16 @@ contract TokenAndPoolDeployer is Script {
 }
 
 contract setPermissions is Script {
-    function run(address token, address pool) public {
+    function grantRole(address token, address pool) public {
+        vm.startBroadcast();
+        IRebaseToken(token).grantMintAndBurnRole(address(pool));
+        vm.stopBroadcast();
+    }
+
+    function setAdmin(address token, address pool) public {
         CCIPLocalSimulatorFork ccipLocalSimulatorFork = new CCIPLocalSimulatorFork();
         Register.NetworkDetails memory networkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
         vm.startBroadcast();
-        IRebaseToken(token).grantMintAndBurnRole(address(pool));
         RegistryModuleOwnerCustom(networkDetails.registryModuleOwnerCustomAddress).registerAdminViaOwner(address(token));
         TokenAdminRegistry(networkDetails.tokenAdminRegistryAddress).acceptAdminRole(address(token));
         TokenAdminRegistry(networkDetails.tokenAdminRegistryAddress).setPool(address(token), address(pool));
