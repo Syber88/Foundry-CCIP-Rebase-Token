@@ -28,9 +28,7 @@ contract BridgeTokenScript is Script {
         uint256 ccipFee = IRouterClient(routerAddress).getFee(destinationChainSelector, message);
         IERC20(linkTokenAddress).approve(routerAddress, ccipFee);
         IERC20(tokenToSendAddress).approve(routerAddress, amountToSend);
-
         IRouterClient(routerAddress).ccipSend(destinationChainSelector, message);
-
         vm.stopBroadcast();
     }
 }
