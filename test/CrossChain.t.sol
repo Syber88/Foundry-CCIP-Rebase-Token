@@ -170,7 +170,6 @@ contract CrossChainTest is Test {
         ccipLocalSimFork.switchChainAndRouteMessage(remoteFork);
         uint256 remoteBalanceAfter = remoteToken.balanceOf(user);
         assertEq(remoteBalanceAfter, remoteBalanceBefore + amountToBridge);
-        uint256 remoteUserInterestRate = remoteToken.getUserInterestRate(user);
     }
 
     function testBridgeAllTOken() public {
